@@ -1,16 +1,19 @@
 package com.adscientiam.capacitor.googlefit;
 
+import android.Manifest;
 import android.content.Intent;
 
 import android.util.Log;
 
+import androidx.activity.result.ActivityResult;
 import androidx.annotation.NonNull;
 
 import com.getcapacitor.JSObject;
-import com.getcapacitor.NativePlugin;
 import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
+import com.getcapacitor.annotation.ActivityCallback;
+import com.getcapacitor.annotation.CapacitorPlugin;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
@@ -38,17 +41,12 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-@NativePlugin(
-        requestCodes = {
-                GoogleFit.GOOGLE_FIT_PERMISSIONS_REQUEST_CODE,
-                GoogleFit.RC_SIGN_IN
-        }
-)
+@CapacitorPlugin()
 public class GoogleFit extends Plugin {
 
     public static final String TAG = "HistoryApi";
     static final int GOOGLE_FIT_PERMISSIONS_REQUEST_CODE = 19849;
-    static final int RC_SIGN_IN = 1337;
+//    static final int RC_SIGN_IN = 1337;
 
     private FitnessOptions getFitnessSignInOptions() {
         // FitnessOptions instance, declaring the Fit API data types
@@ -89,7 +87,7 @@ public class GoogleFit extends Plugin {
                     .build();
             GoogleSignInClient signInClient = GoogleSignIn.getClient(this.getActivity(), gso);
             Intent intent = signInClient.getSignInIntent();
-            startActivityForResult(call, intent, RC_SIGN_IN);
+            startActivityForResult(call, intent, "signInResult");
         } else {
             this.requestPermissions();
         }
@@ -107,6 +105,15 @@ public class GoogleFit extends Plugin {
         call.resolve(result);
     }
 
+    @ActivityCallback
+    private void signInResult(PluginCall call, ActivityResult result) {
+        if (!GoogleSignIn.hasPermissions(this.getAccount(), getFitnessSignInOptions())) {
+            this.requestPermissions();
+        } else {
+            call.resolve();
+        }
+    }
+
     @Override
     protected void handleOnActivityResult(int requestCode, int resultCode, Intent data) {
         super.handleOnActivityResult(requestCode, resultCode, data);
@@ -114,12 +121,12 @@ public class GoogleFit extends Plugin {
 
         if (requestCode == GOOGLE_FIT_PERMISSIONS_REQUEST_CODE) {
             savedCall.resolve();
-        } else if (requestCode == RC_SIGN_IN) {
-            if (!GoogleSignIn.hasPermissions(this.getAccount(), getFitnessSignInOptions())) {
-                this.requestPermissions();
-            } else {
-                savedCall.resolve();
-            }
+//        } else if (requestCode == RC_SIGN_IN) {
+//            if (!GoogleSignIn.hasPermissions(this.getAccount(), getFitnessSignInOptions())) {
+//                this.requestPermissions();
+//            } else {
+//                savedCall.resolve();
+//            }
 
         }
     }

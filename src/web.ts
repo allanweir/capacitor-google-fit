@@ -22,10 +22,3 @@ export class GoogleFitWeb extends WebPlugin implements GoogleFitPlugin {
     throw new Error("Method not implemented.");
   }
 }
-
-const GoogleFit = new GoogleFitWeb();
-
-export { GoogleFit };
-
-import { registerWebPlugin } from '@capacitor/core';
-registerWebPlugin(GoogleFit);
