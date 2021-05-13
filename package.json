@@ -2,8 +2,10 @@
   "name": "capacitor-google-fit",
   "version": "0.2.3",
   "description": "Capacitor plugin to use google fit",
-  "main": "dist/esm/index.js",
+  "main": "dist/plugin.cjs.js",
+  "module": "dist/esm/index.js",
   "types": "dist/esm/index.d.ts",
+  "unpkg": "dist/plugin.js",
   "scripts": {
     "build": "npm run clean && tsc",
     "clean": "rm -rf ./dist",
@@ -17,7 +19,7 @@
   },
   "devDependencies": {
     "@capacitor/android": "latest",
-    "typescript": "3.6.3"
+    "typescript": "~4.1.5"
   },
   "peerDependencies": {
     "@capacitor/core": "3.0.0-rc.0"
