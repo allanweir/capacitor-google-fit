@@ -9,6 +9,7 @@ import androidx.activity.result.ActivityResult;
 import androidx.annotation.NonNull;
 
 import com.getcapacitor.JSObject;
+import com.getcapacitor.NativePlugin;
 import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
@@ -41,7 +42,11 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-@CapacitorPlugin()
+@NativePlugin(
+        requestCodes = {
+                GoogleFit.GOOGLE_FIT_PERMISSIONS_REQUEST_CODE
+        }
+)
 public class GoogleFit extends Plugin {
 
     public static final String TAG = "HistoryApi";
@@ -75,6 +80,8 @@ public class GoogleFit extends Plugin {
                 GOOGLE_FIT_PERMISSIONS_REQUEST_CODE,
                 getAccount(),
                 getFitnessSignInOptions());
+
+
     }
 
     @PluginMethod()
