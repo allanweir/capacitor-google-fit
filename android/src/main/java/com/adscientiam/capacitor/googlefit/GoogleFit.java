@@ -70,11 +70,11 @@ public class GoogleFit extends Plugin {
     @PluginMethod()
     public void connectToGoogleFit(PluginCall call) {
         GoogleSignInAccount account = getAccount();
-        if (account == null || !this.hasFitnessPermissions()) {
+        if (account == null || !this.hasFitnessPermissions() || account.getServerAuthCode() == null) {
             GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                     .requestScopes(new Scope(Scopes.FITNESS_ACTIVITY_READ))
                     .requestEmail()
-                    .requestServerAuthCode("391390937108-7ett381h6banjgjt5m7pujntjuf2p3lu.apps.googleusercontent.com")
+                    .requestServerAuthCode("391390937108-7ett381h6banjgjt5m7pujntjuf2p3lu.apps.googleusercontent.com", true)
                     .build();
             GoogleSignInClient signInClient = GoogleSignIn.getClient(this.getActivity(), gso);
             Intent intent = signInClient.getSignInIntent();
