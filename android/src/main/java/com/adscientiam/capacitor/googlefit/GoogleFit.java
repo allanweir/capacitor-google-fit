@@ -9,7 +9,6 @@ import androidx.activity.result.ActivityResult;
 import androidx.annotation.NonNull;
 
 import com.getcapacitor.JSObject;
-import com.getcapacitor.NativePlugin;
 import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
@@ -19,6 +18,8 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.common.Scopes;
+import com.google.android.gms.common.api.Scope;
 import com.google.android.gms.fitness.Fitness;
 import com.google.android.gms.fitness.FitnessOptions;
 import com.google.android.gms.fitness.data.Bucket;
@@ -40,71 +41,53 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-@NativePlugin(
-        requestCodes = {
-                GoogleFit.GOOGLE_FIT_PERMISSIONS_REQUEST_CODE
-        }
-)
+@CapacitorPlugin()
 public class GoogleFit extends Plugin {
 
     public static final String TAG = "HistoryApi";
-    static final int GOOGLE_FIT_PERMISSIONS_REQUEST_CODE = 19849;
-//    static final int RC_SIGN_IN = 1337;
-
-    private FitnessOptions getFitnessSignInOptions() {
-        // FitnessOptions instance, declaring the Fit API data types
-        // and access required
-        return FitnessOptions.builder()
-                .addDataType(DataType.TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
-                .addDataType(DataType.AGGREGATE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
-                .addDataType(DataType.TYPE_DISTANCE_DELTA, FitnessOptions.ACCESS_READ)
-                .addDataType(DataType.AGGREGATE_DISTANCE_DELTA, FitnessOptions.ACCESS_READ)
-                .addDataType(DataType.TYPE_CALORIES_EXPENDED, FitnessOptions.ACCESS_READ)
-                .addDataType(DataType.AGGREGATE_CALORIES_EXPENDED, FitnessOptions.ACCESS_READ)
-                .addDataType(DataType.TYPE_SPEED, FitnessOptions.ACCESS_READ)
-                .addDataType(DataType.TYPE_ACTIVITY_SEGMENT, FitnessOptions.ACCESS_READ)
-                .addDataType(DataType.TYPE_HEIGHT, FitnessOptions.ACCESS_READ)
-                .addDataType(DataType.TYPE_WEIGHT, FitnessOptions.ACCESS_READ)
-                .build();
-    }
 
     private GoogleSignInAccount getAccount() {
         return GoogleSignIn.getLastSignedInAccount(getActivity());
     }
 
-    private void requestPermissions() {
-        GoogleSignIn.requestPermissions(
-                getActivity(),
-                GOOGLE_FIT_PERMISSIONS_REQUEST_CODE,
-                getAccount(),
-                getFitnessSignInOptions());
-
-
+    public boolean hasFitnessPermissions() {
+        GoogleSignInAccount account = getAccount();
+        if (account == null) {
+            return false;
+        }
+        Set<Scope> grantedScopes = account.getGrantedScopes();
+        for(Scope scope: grantedScopes) {
+            if (scope.getScopeUri().equals(Scopes.FITNESS_ACTIVITY_READ)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @PluginMethod()
     public void connectToGoogleFit(PluginCall call) {
-        saveCall(call);
         GoogleSignInAccount account = getAccount();
-        if (account == null) {
+        if (account == null || !this.hasFitnessPermissions()) {
             GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                    .requestScopes(new Scope(Scopes.FITNESS_ACTIVITY_READ))
                     .requestEmail()
+                    .requestServerAuthCode("391390937108-7ett381h6banjgjt5m7pujntjuf2p3lu.apps.googleusercontent.com")
                     .build();
             GoogleSignInClient signInClient = GoogleSignIn.getClient(this.getActivity(), gso);
             Intent intent = signInClient.getSignInIntent();
             startActivityForResult(call, intent, "signInResult");
         } else {
-            this.requestPermissions();
+            this.signInResult(call, null);
         }
     }
 
     @PluginMethod()
     public void isAllowed(PluginCall call) {
         final JSObject result = new JSObject();
-        GoogleSignInAccount account = getAccount();
-        if (account != null && GoogleSignIn.hasPermissions(account, getFitnessSignInOptions())) {
+        if (this.hasFitnessPermissions()) {
             result.put("allowed", true);
         } else {
             result.put("allowed", false);
@@ -114,28 +97,16 @@ public class GoogleFit extends Plugin {
 
     @ActivityCallback
     private void signInResult(PluginCall call, ActivityResult result) {
-        if (!GoogleSignIn.hasPermissions(this.getAccount(), getFitnessSignInOptions())) {
-            this.requestPermissions();
+        final JSObject resultObject = new JSObject();
+
+        GoogleSignInAccount account = getAccount();
+        String authCode = account.getServerAuthCode();
+        if (this.hasFitnessPermissions() && authCode != null) {
+            resultObject.put("authCode", authCode);
         } else {
-            call.resolve();
+            resultObject.put("authCode", null);
         }
-    }
-
-    @Override
-    protected void handleOnActivityResult(int requestCode, int resultCode, Intent data) {
-        super.handleOnActivityResult(requestCode, resultCode, data);
-        PluginCall savedCall = getSavedCall();
-
-        if (requestCode == GOOGLE_FIT_PERMISSIONS_REQUEST_CODE) {
-            savedCall.resolve();
-//        } else if (requestCode == RC_SIGN_IN) {
-//            if (!GoogleSignIn.hasPermissions(this.getAccount(), getFitnessSignInOptions())) {
-//                this.requestPermissions();
-//            } else {
-//                savedCall.resolve();
-//            }
-
-        }
+        call.resolve(resultObject);
     }
 
     @PluginMethod()
