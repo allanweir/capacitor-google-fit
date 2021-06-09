@@ -15,14 +15,14 @@
   "author": "Ad Scientiam",
   "license": "MIT",
   "dependencies": {
-    "@capacitor/core": "3.0.0-rc.0"
+    "@capacitor/core": "3.0.0"
   },
   "devDependencies": {
     "@capacitor/android": "latest",
     "typescript": "~4.1.5"
   },
   "peerDependencies": {
-    "@capacitor/core": "3.0.0-rc.0"
+    "@capacitor/core": "3.0.0"
   },
   "files": [
     "dist/",
