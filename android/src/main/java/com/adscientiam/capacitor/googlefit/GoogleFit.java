@@ -59,12 +59,15 @@ public class GoogleFit extends Plugin {
             return false;
         }
         Set<Scope> grantedScopes = account.getGrantedScopes();
+        int count = 0;
         for(Scope scope: grantedScopes) {
             if (scope.getScopeUri().equals(Scopes.FITNESS_ACTIVITY_READ)) {
-                return true;
+                count += 1;
+            } else if (scope.getScopeUri().equals(Scopes.FITNESS_LOCATION_READ)) {
+                count += 1;
             }
         }
-        return false;
+        return count >= 2;
     }
 
     @PluginMethod()
@@ -72,7 +75,7 @@ public class GoogleFit extends Plugin {
         GoogleSignInAccount account = getAccount();
         if (account == null || !this.hasFitnessPermissions() || account.getServerAuthCode() == null) {
             GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                    .requestScopes(new Scope(Scopes.FITNESS_ACTIVITY_READ))
+                    .requestScopes(new Scope(Scopes.FITNESS_ACTIVITY_READ), new Scope(Scopes.FITNESS_LOCATION_READ))
                     .requestEmail()
                     .requestServerAuthCode("391390937108-7ett381h6banjgjt5m7pujntjuf2p3lu.apps.googleusercontent.com", true)
                     .build();
