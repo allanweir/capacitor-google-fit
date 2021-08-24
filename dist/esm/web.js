@@ -6,8 +6,8 @@ export class GoogleFitWeb extends WebPlugin {
             platforms: ['web']
         });
     }
-    async connectToGoogleFit() {
-        throw new Error("Method not implemented.");
+    async connectToGoogleFit(options) {
+        throw new Error("Method not implemented." + options);
     }
     async isAllowed() {
         throw new Error("Method not implemented.");

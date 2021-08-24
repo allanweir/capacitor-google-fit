@@ -4,7 +4,7 @@ export interface GoogleFitPlugin {
      * @returns {Promise}
      * @resolve any
      */
-    connectToGoogleFit(): Promise<void>;
+    connectToGoogleFit(options: any): Promise<void>;
     /**
      * Returns wether the permissions are ok or not
      * @returns {Promise}
