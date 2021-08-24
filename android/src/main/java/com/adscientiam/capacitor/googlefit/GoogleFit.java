@@ -77,8 +77,8 @@ public class GoogleFit extends Plugin {
         if (account == null || !this.hasFitnessPermissions() || account.getServerAuthCode() == null) {
             GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                     .requestScopes(new Scope(Scopes.FITNESS_ACTIVITY_READ), new Scope(Scopes.FITNESS_LOCATION_READ))
-                    .requestEmail()
                     .requestServerAuthCode(clientID, true)
+                    .requestEmail()
                     .build();
             GoogleSignInClient signInClient = GoogleSignIn.getClient(this.getActivity(), gso);
             Intent intent = signInClient.getSignInIntent();
