@@ -103,11 +103,15 @@ public class GoogleFit extends Plugin {
     private void signInResult(PluginCall call, ActivityResult result) {
         final JSObject resultObject = new JSObject();
 
-        GoogleSignInAccount account = getAccount();
-        String authCode = account.getServerAuthCode();
-        if (this.hasFitnessPermissions() && authCode != null) {
-            resultObject.put("authCode", authCode);
-        } else {
+        try {
+            GoogleSignInAccount account = getAccount();
+            String authCode = account.getServerAuthCode();
+            if (this.hasFitnessPermissions() && authCode != null) {
+                resultObject.put("authCode", authCode);
+            } else {
+                resultObject.put("authCode", null);
+            }
+        } catch (Exception e) {
             resultObject.put("authCode", null);
         }
         call.resolve(resultObject);
