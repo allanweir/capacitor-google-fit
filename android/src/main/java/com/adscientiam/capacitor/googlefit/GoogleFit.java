@@ -28,6 +28,7 @@ import com.google.android.gms.fitness.data.DataType;
 import com.google.android.gms.fitness.data.Field;
 import com.google.android.gms.fitness.request.DataReadRequest;
 import com.google.android.gms.fitness.result.DataReadResponse;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
@@ -74,18 +75,15 @@ public class GoogleFit extends Plugin {
     public void connectToGoogleFit(PluginCall call) {
         String clientID = call.getString("clientID");
         GoogleSignInAccount account = getAccount();
-//        if (account == null || !this.hasFitnessPermissions() || account.getServerAuthCode() == null) {
-            GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                    .requestScopes(new Scope(Scopes.FITNESS_ACTIVITY_READ), new Scope(Scopes.FITNESS_LOCATION_READ))
-                    .requestServerAuthCode(clientID, true)
-                    .requestEmail()
-                    .build();
-            GoogleSignInClient signInClient = GoogleSignIn.getClient(this.getActivity(), gso);
-            Intent intent = signInClient.getSignInIntent();
-            startActivityForResult(call, intent, "signInResult");
-//        } else {
-//            this.signInResult(call, null);
-//        }
+
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestScopes(new Scope(Scopes.FITNESS_ACTIVITY_READ), new Scope(Scopes.FITNESS_LOCATION_READ))
+                .requestServerAuthCode(clientID, true)
+                .requestEmail()
+                .build();
+        GoogleSignInClient signInClient = GoogleSignIn.getClient(this.getActivity(), gso);
+        Intent intent = signInClient.getSignInIntent();
+        startActivityForResult(call, intent, "signInResult");
     }
 
     @PluginMethod()
@@ -115,6 +113,16 @@ public class GoogleFit extends Plugin {
             resultObject.put("authCode", null);
         }
         call.resolve(resultObject);
+
+        try {
+            // Sign out so a new code can be requested again if needed
+            GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                    .build();
+            GoogleSignInClient signInClient = GoogleSignIn.getClient(this.getActivity(), gso);
+            signInClient.signOut();
+        } catch(Exception e) {
+
+        }
     }
 
     @PluginMethod()
