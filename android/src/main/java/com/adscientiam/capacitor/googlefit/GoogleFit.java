@@ -51,8 +51,6 @@ public class GoogleFit extends Plugin {
 
     public static final String TAG = "HistoryApi";
 
-    private GoogleSignInClient signInClient;
-
     private GoogleSignInAccount getAccount() {
         return GoogleSignIn.getLastSignedInAccount(getActivity());
     }
@@ -77,15 +75,28 @@ public class GoogleFit extends Plugin {
     @PluginMethod()
     public void connectToGoogleFit(PluginCall call) {
         String clientID = call.getString("clientID");
-        GoogleSignInAccount account = getAccount();
+        GoogleFit instance = this;
 
+        try {
+            GoogleSignIn.getClient(this.getContext(), GoogleSignInOptions.DEFAULT_SIGN_IN).signOut().addOnCompleteListener(new OnCompleteListener<Void>() {
+                @Override
+                public void onComplete(@NonNull Task<Void> task) {
+                    instance.startLogin(call, clientID);
+                }
+            });
+        } catch (Exception e) {
+            this.startLogin(call, clientID);
+        }
+    }
+
+    private void startLogin(PluginCall call, String clientID) {
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestScopes(new Scope(Scopes.FITNESS_ACTIVITY_READ), new Scope(Scopes.FITNESS_LOCATION_READ))
                 .requestServerAuthCode(clientID, true)
                 .requestEmail()
                 .build();
-        this.signInClient = GoogleSignIn.getClient(this.getActivity(), gso);
-        Intent intent = this.signInClient.getSignInIntent();
+        GoogleSignInClient signInClient = GoogleSignIn.getClient(this.getContext(), gso);
+        Intent intent = signInClient.getSignInIntent();
         startActivityForResult(call, intent, "signInResult");
     }
 
@@ -116,19 +127,6 @@ public class GoogleFit extends Plugin {
             resultObject.put("authCode", null);
         }
         call.resolve(resultObject);
-
-        try {
-            // Sign out so a new code can be requested again if needed
-            this.signInClient.signOut().addOnCompleteListener((Executor) this, new OnCompleteListener<Void>() {
-
-                @Override
-                public void onComplete(@NonNull Task<Void> task) {
-
-                }
-            });
-        } catch(Exception e) {
-
-        }
     }
 
     @PluginMethod()
