@@ -74,7 +74,7 @@ public class GoogleFit extends Plugin {
     public void connectToGoogleFit(PluginCall call) {
         String clientID = call.getString("clientID");
         GoogleSignInAccount account = getAccount();
-        if (account == null || !this.hasFitnessPermissions() || account.getServerAuthCode() == null) {
+//        if (account == null || !this.hasFitnessPermissions() || account.getServerAuthCode() == null) {
             GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                     .requestScopes(new Scope(Scopes.FITNESS_ACTIVITY_READ), new Scope(Scopes.FITNESS_LOCATION_READ))
                     .requestServerAuthCode(clientID, true)
@@ -83,9 +83,9 @@ public class GoogleFit extends Plugin {
             GoogleSignInClient signInClient = GoogleSignIn.getClient(this.getActivity(), gso);
             Intent intent = signInClient.getSignInIntent();
             startActivityForResult(call, intent, "signInResult");
-        } else {
-            this.signInResult(call, null);
-        }
+//        } else {
+//            this.signInResult(call, null);
+//        }
     }
 
     @PluginMethod()
