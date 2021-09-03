@@ -43,12 +43,15 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 
 @CapacitorPlugin()
 public class GoogleFit extends Plugin {
 
     public static final String TAG = "HistoryApi";
+
+    private GoogleSignInClient signInClient;
 
     private GoogleSignInAccount getAccount() {
         return GoogleSignIn.getLastSignedInAccount(getActivity());
@@ -81,8 +84,8 @@ public class GoogleFit extends Plugin {
                 .requestServerAuthCode(clientID, true)
                 .requestEmail()
                 .build();
-        GoogleSignInClient signInClient = GoogleSignIn.getClient(this.getActivity(), gso);
-        Intent intent = signInClient.getSignInIntent();
+        this.signInClient = GoogleSignIn.getClient(this.getActivity(), gso);
+        Intent intent = this.signInClient.getSignInIntent();
         startActivityForResult(call, intent, "signInResult");
     }
 
@@ -116,10 +119,13 @@ public class GoogleFit extends Plugin {
 
         try {
             // Sign out so a new code can be requested again if needed
-            GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                    .build();
-            GoogleSignInClient signInClient = GoogleSignIn.getClient(this.getActivity(), gso);
-            signInClient.signOut();
+            this.signInClient.signOut().addOnCompleteListener((Executor) this, new OnCompleteListener<Void>() {
+
+                @Override
+                public void onComplete(@NonNull Task<Void> task) {
+
+                }
+            });
         } catch(Exception e) {
 
         }
