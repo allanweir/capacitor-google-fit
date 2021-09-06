@@ -63,9 +63,9 @@ public class GoogleFit extends Plugin {
         Set<Scope> grantedScopes = account.getGrantedScopes();
         int count = 0;
         for(Scope scope: grantedScopes) {
-            if (scope.getScopeUri().equals(Scopes.FITNESS_ACTIVITY_READ)) {
+            if (scope.getScopeUri().equals(Fitness.SCOPE_ACTIVITY_READ.getScopeUri())) {
                 count += 1;
-            } else if (scope.getScopeUri().equals(Scopes.FITNESS_LOCATION_READ)) {
+            } else if (scope.getScopeUri().equals(Fitness.SCOPE_LOCATION_READ.getScopeUri())) {
                 count += 1;
             }
         }
@@ -78,7 +78,12 @@ public class GoogleFit extends Plugin {
         GoogleFit instance = this;
 
         try {
-            GoogleSignIn.getClient(this.getContext(), GoogleSignInOptions.DEFAULT_SIGN_IN).signOut().addOnCompleteListener(new OnCompleteListener<Void>() {
+            GoogleSignIn.getClient(this.getContext(), GoogleSignInOptions.DEFAULT_SIGN_IN).signOut().addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    Log.e("Sign out", e.toString());
+                }
+            }).addOnCompleteListener(new OnCompleteListener<Void>() {
                 @Override
                 public void onComplete(@NonNull Task<Void> task) {
                     instance.startLogin(call, clientID);
@@ -91,7 +96,7 @@ public class GoogleFit extends Plugin {
 
     private void startLogin(PluginCall call, String clientID) {
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestScopes(new Scope(Scopes.FITNESS_ACTIVITY_READ), new Scope(Scopes.FITNESS_LOCATION_READ))
+                .requestScopes(Fitness.SCOPE_ACTIVITY_READ, Fitness.SCOPE_LOCATION_READ)
                 .requestServerAuthCode(clientID, true)
                 .requestEmail()
                 .build();
